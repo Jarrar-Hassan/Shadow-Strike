@@ -17,6 +17,8 @@ tags:
     description: Saved reports
   - name: admin
     description: Admin operations
+  - name: stats
+    description: Platform statistics
 paths:
   /healthz:
     get:
@@ -223,6 +225,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Get platform statistics
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStats"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -393,6 +416,71 @@ components:
         - action
         - description
 
+    IocEntry:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ip, domain, url, hash, email, cve, username]
+        value:
+          type: string
+        context:
+          type: string
+      required:
+        - type
+        - value
+        - context
+
+    ThreatActorProfile:
+      type: object
+      properties:
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        motivation:
+          type: string
+        sophistication:
+          type: string
+          enum: [low, medium, high, nation-state]
+        targetSectors:
+          type: array
+          items:
+            type: string
+        knownTools:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - aliases
+        - motivation
+        - sophistication
+        - targetSectors
+        - knownTools
+
+    PlaybookStep:
+      type: object
+      properties:
+        phase:
+          type: string
+        step:
+          type: integer
+        action:
+          type: string
+        details:
+          type: string
+        timeframe:
+          type: string
+      required:
+        - phase
+        - step
+        - action
+        - details
+        - timeframe
+
     AnalysisResult:
       type: object
       properties:
@@ -433,6 +521,24 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/GraphEdge"
+        iocs:
+          type: array
+          items:
+            $ref: "#/components/schemas/IocEntry"
+        threatActorProfile:
+          $ref: "#/components/schemas/ThreatActorProfile"
+        incidentPlaybook:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaybookStep"
+        cveIds:
+          type: array
+          items:
+            type: string
+        confidenceScore:
+          type: integer
+          minimum: 0
+          maximum: 100
       required:
         - threatLevel
         - riskScore
@@ -445,6 +551,11 @@ components:
         - defenseActions
         - graphNodes
         - graphEdges
+        - iocs
+        - threatActorProfile
+        - incidentPlaybook
+        - cveIds
+        - confidenceScore
 
     SaveReportRequest:
       type: object
@@ -493,3 +604,55 @@ components:
             $ref: "#/components/schemas/Report"
       required:
         - reports
+
+    ThreatLevelCount:
+      type: object
+      properties:
+        level:
+          type: string
+        count:
+          type: integer
+      required:
+        - level
+        - count
+
+    PlatformStats:
+      type: object
+      properties:
+        totalReports:
+          type: integer
+        avgRiskScore:
+          type: number
+        criticalCount:
+          type: integer
+        highCount:
+          type: integer
+        mediumCount:
+          type: integer
+        lowCount:
+          type: integer
+        topAttackTypes:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              count:
+                type: integer
+            required:
+              - type
+              - count
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimelineEvent"
+      required:
+        - totalReports
+        - avgRiskScore
+        - criticalCount
+        - highCount
+        - mediumCount
+        - lowCount
+        - topAttackTypes
+        - recentActivity

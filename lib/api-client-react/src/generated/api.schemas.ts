@@ -111,6 +111,51 @@ export interface DefenseAction {
   description: string;
 }
 
+export type IocEntryType = (typeof IocEntryType)[keyof typeof IocEntryType];
+
+export const IocEntryType = {
+  ip: "ip",
+  domain: "domain",
+  url: "url",
+  hash: "hash",
+  email: "email",
+  cve: "cve",
+  username: "username",
+} as const;
+
+export interface IocEntry {
+  type: IocEntryType;
+  value: string;
+  context: string;
+}
+
+export type ThreatActorProfileSophistication =
+  (typeof ThreatActorProfileSophistication)[keyof typeof ThreatActorProfileSophistication];
+
+export const ThreatActorProfileSophistication = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  "nation-state": "nation-state",
+} as const;
+
+export interface ThreatActorProfile {
+  name: string;
+  aliases: string[];
+  motivation: string;
+  sophistication: ThreatActorProfileSophistication;
+  targetSectors: string[];
+  knownTools: string[];
+}
+
+export interface PlaybookStep {
+  phase: string;
+  step: number;
+  action: string;
+  details: string;
+  timeframe: string;
+}
+
 export type AnalysisResultThreatLevel =
   (typeof AnalysisResultThreatLevel)[keyof typeof AnalysisResultThreatLevel];
 
@@ -137,6 +182,15 @@ export interface AnalysisResult {
   defenseActions: DefenseAction[];
   graphNodes: GraphNode[];
   graphEdges: GraphEdge[];
+  iocs: IocEntry[];
+  threatActorProfile: ThreatActorProfile;
+  incidentPlaybook: PlaybookStep[];
+  cveIds: string[];
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  confidenceScore: number;
 }
 
 export interface SaveReportRequest {
@@ -156,4 +210,25 @@ export interface Report {
 
 export interface ReportList {
   reports: Report[];
+}
+
+export interface ThreatLevelCount {
+  level: string;
+  count: number;
+}
+
+export type PlatformStatsTopAttackTypesItem = {
+  type: string;
+  count: number;
+};
+
+export interface PlatformStats {
+  totalReports: number;
+  avgRiskScore: number;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  lowCount: number;
+  topAttackTypes: PlatformStatsTopAttackTypesItem[];
+  recentActivity: TimelineEvent[];
 }

@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useGetReports, useDeleteReport } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-context";
 import { getAuthHeaders } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Trash2, Calendar, ShieldAlert, ArrowRight, Loader2 } from "lucide-react";
+import { FileText, Trash2, Calendar, ShieldAlert, ArrowRight, Loader2, AlertTriangle, TrendingUp, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 export default function Reports() {
   const { token, isAuthenticated } = useAuth();
@@ -24,8 +25,35 @@ export default function Reports() {
     if (confirm("Are you sure you want to delete this report?")) {
       await deleteMutation.mutateAsync({ id });
       refetch();
+      if (selectedReportId === id) setSelectedReportId(null);
     }
   };
+
+  const reports = data?.reports || [];
+  
+  const analytics = useMemo(() => {
+    if (!reports.length) return null;
+    
+    const total = reports.length;
+    const avgScore = Math.round(reports.reduce((acc, r) => acc + r.result.riskScore, 0) / total);
+    const criticalHighCount = reports.filter(r => ['critical', 'high'].includes(r.result.threatLevel)).length;
+    
+    const threatCounts: Record<string, number> = { low: 0, medium: 0, high: 0, critical: 0 };
+    reports.forEach(r => {
+      if (threatCounts[r.result.threatLevel] !== undefined) {
+        threatCounts[r.result.threatLevel]++;
+      }
+    });
+
+    const chartData = [
+      { name: 'Low', count: threatCounts.low, color: '#10b981' },
+      { name: 'Medium', count: threatCounts.medium, color: '#f59e0b' },
+      { name: 'High', count: threatCounts.high, color: '#f97316' },
+      { name: 'Critical', count: threatCounts.critical, color: '#e11d48' },
+    ];
+
+    return { total, avgScore, criticalHighCount, chartData };
+  }, [reports]);
 
   if (!isAuthenticated) {
     return (
@@ -39,7 +67,6 @@ export default function Reports() {
     );
   }
 
-  const reports = data?.reports || [];
   const selectedReport = reports.find(r => r.id === selectedReportId);
 
   return (
@@ -49,13 +76,69 @@ export default function Reports() {
         <p className="text-muted-foreground">Access and review your historical threat analyses.</p>
       </div>
 
+      {!isLoading && analytics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card className="border-slate-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-medium text-slate-500">Total Reports</p>
+                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-slate-600" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-slate-900">{analytics.total}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-medium text-slate-500">Avg Risk Score</p>
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-blue-600" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-slate-900">{analytics.avgScore}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-medium text-slate-500">Critical/High</p>
+                <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-slate-900">{analytics.criticalHighCount}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200 col-span-2 md:col-span-1 p-4 flex flex-col justify-center">
+            <p className="text-xs font-medium text-slate-500 mb-2">Threat Distribution</p>
+            <div className="h-16 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                  <Tooltip 
+                    cursor={{fill: 'transparent'}}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ color: '#0f172a', fontWeight: 500 }}
+                  />
+                  <Bar dataKey="count" radius={[2, 2, 0, 0]}>
+                    {analytics.chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : reports.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
-          {/* Using generated image as requested */}
           <img 
             src={`${import.meta.env.BASE_URL}images/empty-reports.png`} 
             alt="No reports" 
@@ -85,9 +168,9 @@ export default function Reports() {
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="w-3.5 h-3.5" />
-                        {format(new Date(report.createdAt), 'MMM d, yyyy HH:mm')}
+                        {format(new Date(report.createdAt), 'MMM d, yyyy')}
                       </div>
-                      <Button variant="ghost" size="icon" className="w-8 h-8 h-8 -mt-2 -mr-2 text-slate-400 hover:text-destructive" onClick={(e) => handleDelete(report.id, e)}>
+                      <Button variant="ghost" size="icon" className="w-8 h-8 h-8 -mt-2 -mr-2 text-slate-400 hover:text-destructive hover:bg-red-50" onClick={(e) => handleDelete(report.id, e)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -120,8 +203,8 @@ export default function Reports() {
                       <div className="flex justify-between items-center">
                         <CardTitle className="text-xl">{selectedReport.title}</CardTitle>
                         <div className="text-sm text-muted-foreground flex items-center gap-2">
-                          <FileText className="w-4 h-4" />
-                          Full Report
+                          <Activity className="w-4 h-4" />
+                          Risk Score: <span className="font-bold text-slate-900">{selectedReport.result.riskScore}</span>
                         </div>
                       </div>
                     </CardHeader>
@@ -148,24 +231,26 @@ export default function Reports() {
                         <h4 className="font-semibold text-foreground mb-3">Identified Tactics (MITRE)</h4>
                         <div className="flex flex-wrap gap-2">
                           {selectedReport.result.mitreMappings.map(m => (
-                            <Badge key={m.id} variant="secondary" className="px-3 py-1 font-mono">
+                            <Badge key={m.id} variant="secondary" className="px-3 py-1 font-mono text-xs">
                               {m.id}: {m.name}
                             </Badge>
                           ))}
                         </div>
                       </div>
 
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-3">Predicted Next Steps</h4>
-                        <ul className="space-y-2">
-                          {selectedReport.result.nextStepsPrediction.map((step, i) => (
-                            <li key={i} className="flex gap-3 text-sm text-slate-600">
-                              <ArrowRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                              {step}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      {selectedReport.result.nextStepsPrediction && selectedReport.result.nextStepsPrediction.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-foreground mb-3">Predicted Next Steps</h4>
+                          <ul className="space-y-2">
+                            {selectedReport.result.nextStepsPrediction.map((step, i) => (
+                              <li key={i} className="flex gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <ArrowRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                {step}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -176,7 +261,10 @@ export default function Reports() {
                   animate={{ opacity: 1 }}
                   className="h-full flex items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 min-h-[400px]"
                 >
-                  <p className="text-muted-foreground">Select a report from the list to view details.</p>
+                  <div className="text-center">
+                    <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                    <p className="text-muted-foreground">Select a report from the list to view details.</p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

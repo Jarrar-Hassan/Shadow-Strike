@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
-import { Shield, Activity, FileText, Users, LogOut, User as UserIcon } from "lucide-react";
+import { Shield, Activity, FileText, Users, LogOut, User as UserIcon, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ export function Header() {
   const navLinks = [
     { href: "/", label: "Overview", icon: Shield },
     { href: "/analyze", label: "Analyze", icon: Activity, requiresAuth: true },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, requiresAuth: true },
     { href: "/reports", label: "Reports", icon: FileText, requiresAuth: true },
     { href: "/admin", label: "Admin", icon: Users, requiresAdmin: true },
   ];

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useGetMe } from "@workspace/api-client-react";
-import { UserProfile } from "@workspace/api-client-react/src/generated/api.schemas";
+import type { UserProfile } from "@workspace/api-client-react";
 import { getAuthHeaders } from "./utils";
 
 interface AuthContextType {

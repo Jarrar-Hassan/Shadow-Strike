@@ -74,6 +74,9 @@ export const AnalyzeLogsBody = zod.object({
 export const analyzeLogsResponseRiskScoreMin = 0;
 export const analyzeLogsResponseRiskScoreMax = 100;
 
+export const analyzeLogsResponseConfidenceScoreMin = 0;
+export const analyzeLogsResponseConfidenceScoreMax = 100;
+
 export const AnalyzeLogsResponse = zod.object({
   threatLevel: zod.enum(["low", "medium", "high", "critical"]),
   riskScore: zod
@@ -120,6 +123,43 @@ export const AnalyzeLogsResponse = zod.object({
       label: zod.string(),
     }),
   ),
+  iocs: zod.array(
+    zod.object({
+      type: zod.enum([
+        "ip",
+        "domain",
+        "url",
+        "hash",
+        "email",
+        "cve",
+        "username",
+      ]),
+      value: zod.string(),
+      context: zod.string(),
+    }),
+  ),
+  threatActorProfile: zod.object({
+    name: zod.string(),
+    aliases: zod.array(zod.string()),
+    motivation: zod.string(),
+    sophistication: zod.enum(["low", "medium", "high", "nation-state"]),
+    targetSectors: zod.array(zod.string()),
+    knownTools: zod.array(zod.string()),
+  }),
+  incidentPlaybook: zod.array(
+    zod.object({
+      phase: zod.string(),
+      step: zod.number(),
+      action: zod.string(),
+      details: zod.string(),
+      timeframe: zod.string(),
+    }),
+  ),
+  cveIds: zod.array(zod.string()),
+  confidenceScore: zod
+    .number()
+    .min(analyzeLogsResponseConfidenceScoreMin)
+    .max(analyzeLogsResponseConfidenceScoreMax),
 });
 
 /**
@@ -127,6 +167,9 @@ export const AnalyzeLogsResponse = zod.object({
  */
 export const getReportsResponseReportsItemResultRiskScoreMin = 0;
 export const getReportsResponseReportsItemResultRiskScoreMax = 100;
+
+export const getReportsResponseReportsItemResultConfidenceScoreMin = 0;
+export const getReportsResponseReportsItemResultConfidenceScoreMax = 100;
 
 export const GetReportsResponse = zod.object({
   reports: zod.array(
@@ -181,6 +224,43 @@ export const GetReportsResponse = zod.object({
             label: zod.string(),
           }),
         ),
+        iocs: zod.array(
+          zod.object({
+            type: zod.enum([
+              "ip",
+              "domain",
+              "url",
+              "hash",
+              "email",
+              "cve",
+              "username",
+            ]),
+            value: zod.string(),
+            context: zod.string(),
+          }),
+        ),
+        threatActorProfile: zod.object({
+          name: zod.string(),
+          aliases: zod.array(zod.string()),
+          motivation: zod.string(),
+          sophistication: zod.enum(["low", "medium", "high", "nation-state"]),
+          targetSectors: zod.array(zod.string()),
+          knownTools: zod.array(zod.string()),
+        }),
+        incidentPlaybook: zod.array(
+          zod.object({
+            phase: zod.string(),
+            step: zod.number(),
+            action: zod.string(),
+            details: zod.string(),
+            timeframe: zod.string(),
+          }),
+        ),
+        cveIds: zod.array(zod.string()),
+        confidenceScore: zod
+          .number()
+          .min(getReportsResponseReportsItemResultConfidenceScoreMin)
+          .max(getReportsResponseReportsItemResultConfidenceScoreMax),
       }),
       createdAt: zod.date(),
     }),
@@ -192,6 +272,9 @@ export const GetReportsResponse = zod.object({
  */
 export const saveReportBodyResultRiskScoreMin = 0;
 export const saveReportBodyResultRiskScoreMax = 100;
+
+export const saveReportBodyResultConfidenceScoreMin = 0;
+export const saveReportBodyResultConfidenceScoreMax = 100;
 
 export const SaveReportBody = zod.object({
   title: zod.string(),
@@ -242,11 +325,51 @@ export const SaveReportBody = zod.object({
         label: zod.string(),
       }),
     ),
+    iocs: zod.array(
+      zod.object({
+        type: zod.enum([
+          "ip",
+          "domain",
+          "url",
+          "hash",
+          "email",
+          "cve",
+          "username",
+        ]),
+        value: zod.string(),
+        context: zod.string(),
+      }),
+    ),
+    threatActorProfile: zod.object({
+      name: zod.string(),
+      aliases: zod.array(zod.string()),
+      motivation: zod.string(),
+      sophistication: zod.enum(["low", "medium", "high", "nation-state"]),
+      targetSectors: zod.array(zod.string()),
+      knownTools: zod.array(zod.string()),
+    }),
+    incidentPlaybook: zod.array(
+      zod.object({
+        phase: zod.string(),
+        step: zod.number(),
+        action: zod.string(),
+        details: zod.string(),
+        timeframe: zod.string(),
+      }),
+    ),
+    cveIds: zod.array(zod.string()),
+    confidenceScore: zod
+      .number()
+      .min(saveReportBodyResultConfidenceScoreMin)
+      .max(saveReportBodyResultConfidenceScoreMax),
   }),
 });
 
 export const saveReportResponseResultRiskScoreMin = 0;
 export const saveReportResponseResultRiskScoreMax = 100;
+
+export const saveReportResponseResultConfidenceScoreMin = 0;
+export const saveReportResponseResultConfidenceScoreMax = 100;
 
 export const SaveReportResponse = zod.object({
   id: zod.number(),
@@ -299,6 +422,43 @@ export const SaveReportResponse = zod.object({
         label: zod.string(),
       }),
     ),
+    iocs: zod.array(
+      zod.object({
+        type: zod.enum([
+          "ip",
+          "domain",
+          "url",
+          "hash",
+          "email",
+          "cve",
+          "username",
+        ]),
+        value: zod.string(),
+        context: zod.string(),
+      }),
+    ),
+    threatActorProfile: zod.object({
+      name: zod.string(),
+      aliases: zod.array(zod.string()),
+      motivation: zod.string(),
+      sophistication: zod.enum(["low", "medium", "high", "nation-state"]),
+      targetSectors: zod.array(zod.string()),
+      knownTools: zod.array(zod.string()),
+    }),
+    incidentPlaybook: zod.array(
+      zod.object({
+        phase: zod.string(),
+        step: zod.number(),
+        action: zod.string(),
+        details: zod.string(),
+        timeframe: zod.string(),
+      }),
+    ),
+    cveIds: zod.array(zod.string()),
+    confidenceScore: zod
+      .number()
+      .min(saveReportResponseResultConfidenceScoreMin)
+      .max(saveReportResponseResultConfidenceScoreMax),
   }),
   createdAt: zod.date(),
 });
@@ -324,6 +484,31 @@ export const GetUsersResponse = zod.object({
       email: zod.string(),
       role: zod.enum(["user", "admin"]),
       createdAt: zod.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get platform statistics
+ */
+export const GetStatsResponse = zod.object({
+  totalReports: zod.number(),
+  avgRiskScore: zod.number(),
+  criticalCount: zod.number(),
+  highCount: zod.number(),
+  mediumCount: zod.number(),
+  lowCount: zod.number(),
+  topAttackTypes: zod.array(
+    zod.object({
+      type: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  recentActivity: zod.array(
+    zod.object({
+      time: zod.string(),
+      event: zod.string(),
+      severity: zod.enum(["low", "medium", "high", "critical"]),
     }),
   ),
 });

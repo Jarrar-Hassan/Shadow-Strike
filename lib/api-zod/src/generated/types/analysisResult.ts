@@ -9,7 +9,10 @@ import type { AnalysisResultThreatLevel } from "./analysisResultThreatLevel";
 import type { DefenseAction } from "./defenseAction";
 import type { GraphEdge } from "./graphEdge";
 import type { GraphNode } from "./graphNode";
+import type { IocEntry } from "./iocEntry";
 import type { MitreEntry } from "./mitreEntry";
+import type { PlaybookStep } from "./playbookStep";
+import type { ThreatActorProfile } from "./threatActorProfile";
 import type { TimelineEvent } from "./timelineEvent";
 
 export interface AnalysisResult {
@@ -28,4 +31,13 @@ export interface AnalysisResult {
   defenseActions: DefenseAction[];
   graphNodes: GraphNode[];
   graphEdges: GraphEdge[];
+  iocs: IocEntry[];
+  threatActorProfile: ThreatActorProfile;
+  incidentPlaybook: PlaybookStep[];
+  cveIds: string[];
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  confidenceScore: number;
 }

@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/header";
 import Home from "@/pages/home";
 import Analyze from "@/pages/analyze";
 import Reports from "@/pages/reports";
+import Dashboard from "@/pages/dashboard";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
@@ -27,6 +28,7 @@ function Router() {
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/analyze" component={Analyze} />
           <Route path="/reports" component={Reports} />
           <Route path="/admin" component={Admin} />
