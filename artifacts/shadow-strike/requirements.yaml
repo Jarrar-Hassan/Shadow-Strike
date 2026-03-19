@@ -1,0 +1,19 @@
+packages:
+  "framer-motion": "For smooth page transitions, stagger animations, and micro-interactions"
+  "recharts": "For risk score gauge and analytical charts"
+  "clsx": "Utility for conditional Tailwind classes"
+  "tailwind-merge": "Utility for merging Tailwind classes safely"
+  "date-fns": "For formatting timeline and report dates"
+
+images:
+  - path: "artifacts/shadow-strike/public/images/hero-bg.png"
+    description: "A clean, bright, professional abstract technology background. Very subtle light blue and white gradient mesh with thin geometric data lines and a faint glowing security shield motif. Enterprise software style, high key lighting, lots of white space."
+    aspect_ratio: "16:9"
+  - path: "artifacts/shadow-strike/public/images/empty-reports.png"
+    description: "A beautiful clean flat vector illustration of a document folder with a magnifying glass, in soft blue and gray tones on a transparent background. Represents empty state for missing analysis reports."
+    aspect_ratio: "1:1"
+
+notes:
+  - Using generated orval hooks from @workspace/api-client-react
+  - Token is stored in localStorage and manually passed to hooks via request headers since we don't control customFetch
+  - Assuming customFetch's second parameter accepts standard RequestInit options including headers

@@ -1,22 +1,28 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: ShadowStrike AI SOC Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: analyze
+    description: Log analysis
+  - name: reports
+    description: Saved reports
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,7 +30,206 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /analyze:
+    post:
+      operationId: analyzeLogs
+      tags: [analyze]
+      summary: Analyze security logs
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeRequest"
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResult"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reports:
+    get:
+      operationId: getReports
+      tags: [reports]
+      summary: Get saved reports
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of saved reports
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportList"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: saveReport
+      tags: [reports]
+      summary: Save a report
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveReportRequest"
+      responses:
+        "200":
+          description: Report saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reports/{id}:
+    delete:
+      operationId: deleteReport
+      tags: [reports]
+      summary: Delete a report
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/users:
+    get:
+      operationId: getUsers
+      tags: [admin]
+      summary: Get all registered users (admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +239,257 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    AuthRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserProfile"
+      required:
+        - token
+        - user
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - role
+        - createdAt
+
+    UserList:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserProfile"
+      required:
+        - users
+
+    AnalyzeRequest:
+      type: object
+      properties:
+        logs:
+          type: string
+          description: Raw log text to analyze
+      required:
+        - logs
+
+    MitreEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        tactic:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - name
+        - tactic
+        - description
+
+    TimelineEvent:
+      type: object
+      properties:
+        time:
+          type: string
+        event:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+      required:
+        - time
+        - event
+        - severity
+
+    GraphNode:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum: [attacker, target, technique, tool]
+      required:
+        - id
+        - label
+        - type
+
+    GraphEdge:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        label:
+          type: string
+      required:
+        - from
+        - to
+        - label
+
+    DefenseAction:
+      type: object
+      properties:
+        priority:
+          type: string
+          enum: [immediate, short-term, long-term]
+        action:
+          type: string
+        description:
+          type: string
+      required:
+        - priority
+        - action
+        - description
+
+    AnalysisResult:
+      type: object
+      properties:
+        threatLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        riskScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        attackerOrigin:
+          type: string
+        attackType:
+          type: string
+        summary:
+          type: string
+        mitreMappings:
+          type: array
+          items:
+            $ref: "#/components/schemas/MitreEntry"
+        timeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimelineEvent"
+        nextStepsPrediction:
+          type: array
+          items:
+            type: string
+        defenseActions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DefenseAction"
+        graphNodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/GraphNode"
+        graphEdges:
+          type: array
+          items:
+            $ref: "#/components/schemas/GraphEdge"
+      required:
+        - threatLevel
+        - riskScore
+        - attackerOrigin
+        - attackType
+        - summary
+        - mitreMappings
+        - timeline
+        - nextStepsPrediction
+        - defenseActions
+        - graphNodes
+        - graphEdges
+
+    SaveReportRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        logs:
+          type: string
+        result:
+          $ref: "#/components/schemas/AnalysisResult"
+      required:
+        - title
+        - logs
+        - result
+
+    Report:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        logs:
+          type: string
+        result:
+          $ref: "#/components/schemas/AnalysisResult"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - title
+        - logs
+        - result
+        - createdAt
+
+    ReportList:
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: "#/components/schemas/Report"
+      required:
+        - reports

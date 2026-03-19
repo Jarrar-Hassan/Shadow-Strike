@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "ShadowStrike"
+version = "1.0.0"
+id = "artifacts/shadow-strike"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19072
+
+[services.development]
+run = "pnpm --filter @workspace/shadow-strike run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/shadow-strike", "run", "build" ]
+publicDir = "artifacts/shadow-strike/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19072"
+BASE_PATH = "/"
