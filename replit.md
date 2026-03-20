@@ -4,20 +4,6 @@
 
 ShadowStrike is an AI-powered Security Operations Center (SOC) platform that analyzes raw security logs to identify threats, map them to MITRE ATT&CK framework, and provide actionable defense recommendations.
 
-## Stack
-
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Frontend**: React + Vite, Tailwind CSS, Shadcn UI, Framer Motion, Recharts
-- **Auth**: JWT (bcryptjs + jsonwebtoken), 30-day token expiry
-- **Build**: esbuild (CJS bundle)
-
 ## Structure
 
 ```text
@@ -47,24 +33,4 @@ artifacts-monorepo/
 10. **Save Reports** - Save and review analysis reports
 11. **Auth System** - JWT login/register, admin panel with user management
 
-## Admin Access
 
-- Email: `jarrarhassan05@gmail.com`
-- Password: `T3lthod@72`
-- Admin can view all registered users at `/admin`
-
-## API Endpoints
-
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login
-- `GET /api/auth/me` - Get current user (auth required)
-- `POST /api/analyze` - Analyze logs (auth required)
-- `GET /api/reports` - Get user's saved reports (auth required)
-- `POST /api/reports` - Save a report (auth required)
-- `DELETE /api/reports/:id` - Delete a report (auth required)
-- `GET /api/admin/users` - Get all users (admin only)
-
-## Database Schema
-
-- `users` - id, email, password_hash, role, created_at
-- `reports` - id, user_id, title, logs, result (jsonb), created_at
